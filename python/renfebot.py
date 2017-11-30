@@ -9,7 +9,7 @@ import datetime
 from enum import Enum
 import logging
 
-import telegramcalendar
+from telegramcalendarkeyboard import telegramcalendar
 import renfechecker
 import renfebotdb
 from renfebottexts import texts as TEXTS
