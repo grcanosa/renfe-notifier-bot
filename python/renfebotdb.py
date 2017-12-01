@@ -38,7 +38,7 @@ class RenfeBotDB:
             cur.execute("""CREATE TABLE users (userid INTEGER PRIMARY KEY,
                                                 username TEXT,
                                                 auth INTEGER)""")
-            cur.execute("""CREATE TABLE notifications (origin TEXT,
+            cur.execute("""CREATE TABLE queries (origin TEXT,
                                                     destination TEXT,
                                                     date INTEGER,
                                                     userid INTEGER,
@@ -49,7 +49,6 @@ class RenfeBotDB:
 
     @_openclose
     def get_user_auth(self,conn,cur,userid,username):
-        print("GETTING AUTH")
         auth = 0
         cur.execute("SELECT auth FROM users WHERE userid=%d" %(userid))
         val = cur.fetchall()
@@ -60,7 +59,6 @@ class RenfeBotDB:
             auth = val[0]["auth"]
         else:
             logger.error("Not possible, something is clearly wrong")
-        print("AUTH GET %d" % (auth))
         return auth
 
     @_openclose
@@ -69,11 +67,26 @@ class RenfeBotDB:
                         (username,auth,userid))
         conn.commit()
 
+    def date_to_timestamp(date):
+        return int(datetime.datetime.strptime(date,"%d/%m/%Y").timestamp())
+
+    def get_user_queries(self,cur,userid):
+        cur.execute("SELECT * FROM queries WHERE userid=%d" % (userid))
+        return cur.fetchall()
+
+    @_openclose
+    def add_periodic_query(self,conn,cur,userid,origin,destination,date):
+        i_date = self.date_to_timestamp(date)
+        #user_queries =
+
+    @_openclose
+    def remove_periodic_query(self,conn,cur,userid,origin,destination,date):
+        print("lala")
 
     @_openclose
     def _add_notification(self,conn,cur,userid,origin,destination,date):
         #Convert date from string to number
-        i_date = int(datetime.datetime.strptime(date,"%d/%m/%Y").timestamp())
+        i_date = self.date_to_timestamp(date)
         cur.execute("INSERT INTO notifications VALUES(%s,%s,%d,%d);" %
             (origin,destination,i_date,userid))
         conn.commit()

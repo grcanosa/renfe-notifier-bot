@@ -22,10 +22,10 @@ class RenfeChecker:
         time.sleep(1)
         self._checkTrains(orig, dest, dat_go, dat_ret)
         if self._areTrainsAvailable():
-            print("There are trains available")
+            #print("There are trains available")
             return True,self._getTrainsDF()
         else:
-            print("No trains available")
+            #print("No trains available")
             return False,None
 
 
@@ -70,10 +70,7 @@ class RenfeChecker:
         return df
 
     def _fill_elem(self,elem,data):
-        if data == None:
-            print("Not filling "+elem)
-        else:
-            print("Filling "+elem+" with "+data)
+        if data is not None:
             el = self.driver.find_element_by_id(elem)
             el.clear()
             el.send_keys(data)

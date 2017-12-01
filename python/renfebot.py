@@ -28,9 +28,9 @@ class ConvStates(Enum):
     DATE = 3
 
 class BotOptions(Enum):
-    ADD_CONSULT = 1
-    DEL_CONSULT = 2
-    DO_CONSULT = 3
+    ADD_QUERY = 1
+    DEL_QUERY = 2
+    DO_QUERY = 3
 
 
 class RenfeBot:
@@ -56,7 +56,7 @@ class RenfeBot:
         self._RF = renfechecker.RenfeChecker()
         self._DB = renfebotdb.RenfeBotDB("midatabase.db")
 
-    def _send_consult_results_to_user(self,bot,userid,results,origin,dest,date):
+    def _send_query_results_to_user(self,bot,userid,results,origin,dest,date):
         if results[0]:
             df = results[1]
             trenes = df.loc[df["DISPONIBLE"]==True]
@@ -90,11 +90,12 @@ class RenfeBot:
             logger.debug("Date is "+conv._date)
             bot.send_message(chat_id = userid, text=TEXTS["SELECTED_DATA"].
                 format(origin=conv._origin,destination=conv._dest,date=conv._date))
-            if conv._option == BotOptions.ADD_CONSULT:
-                log.error("NOT YET")
-            elif conv._option == BotOptions.DO_CONSULT:
+            if conv._option == BotOptions.ADD_QUERY:
+                res = self._DB.add_periodic_query(userid,conv._origin,conv._dest,conv._date)
+
+            elif conv._option == BotOptions.DO_QUERY:
                 res = self._RF.check_trip(conv._origin, conv._dest, conv._date)
-                self._send_consult_results_to_user(bot,userid,res,
+                self._send_query_results_to_user(bot,userid,res,
                                     conv._origin,conv._dest,conv._date)
             else:
                 logger.error("Problem, no other option should lead HERE!")
@@ -128,20 +129,20 @@ class RenfeBot:
     def _h_option(self,bot,update):
         userid = update.message.from_user.id
         ret_code = 0
-        if update.message.text == TEXTS["MAIN_OP_DO_CONSULT"]:
-            self._conversations[userid]._option = BotOptions.DO_CONSULT
-            update.message.reply_text(TEXTS["DO_ONETIME_CONSULT"])
+        if update.message.text == TEXTS["MAIN_OP_DO_QUERY"]:
+            self._conversations[userid]._option = BotOptions.DO_QUERY
+            update.message.reply_text(TEXTS["DO_ONETIME_QUERY"])
             update.message.reply_text(TEXTS["SELECT_ORIGIN_STATION"],
             reply_markup=ReplyKeyboardMarkup(KEYBOARDS["STATIONS"], one_time_keyboard=True))
             ret_code = ConvStates.STATION
-        elif update.message.text == TEXTS["MAIN_OP_ADD_CONSULT"]:
-            self._conversations[userid]._option = BotOptions.ADD_CONSULT
-            update.message.reply_text(TEXTS["ADD_PERIODIC_CONSULT"])
+        elif update.message.text == TEXTS["MAIN_OP_ADD_QUERY"]:
+            self._conversations[userid]._option = BotOptions.ADD_QUERY
+            update.message.reply_text(TEXTS["ADD_PERIODIC_QUERY"])
             update.message.reply_text(TEXTS["SELECT_ORIGIN_STATION"],
             reply_markup=ReplyKeyboardMarkup(KEYBOARDS["STATIONS"], one_time_keyboard=True))
             ret_code = ConvStates.STATION
-        elif update.message.text == TEXTS["MAIN_OP_DEL_CONSULT"]:
-            self._conversations[userid]._option = BotOptions.DEL_CONSULT
+        elif update.message.text == TEXTS["MAIN_OP_DEL_QUERY"]:
+            self._conversations[userid]._option = BotOptions.DEL_QUERY
             ret_code = RenfeBot.XXX
         else:
             update.message.reply_text(TEXTS["MAIN_OP_UNKNOWN"])
@@ -160,7 +161,6 @@ class RenfeBot:
         if update.message.from_user.last_name is not None:
             username += " "+update.message.from_user.last_name
         auth = self._DB.get_user_auth(userid,username)
-        print("AUTH IS %d" % (auth))
         if auth == 0: # Not authorized
             logger.debug("NOT AUTHORIZED USER")
             update.message.reply_text(TEXTS["NOT_AUTH_REPLY"].format(username=username),
@@ -178,8 +178,8 @@ class RenfeBot:
 
     def _ask_admin_for_access(self,bot,userid,username):
         keyboard= [
-            ["/user ALLOW %d %s" % (userid,username)],
-            ["/user NOT_ALLOW %d %s" % (userid,username)]
+            ["/admin ALLOW %d %s" % (userid,username)],
+            ["/admin NOT_ALLOW %d %s" % (userid,username)]
         ]
         bot.send_message(chat_id=self._admin_id,
                         text=TEXTS["ADMIN_USER_REQ_ACCESS"].format(
@@ -188,22 +188,26 @@ class RenfeBot:
                         reply_markup=ReplyKeyboardMarkup(keyboard),
                         one_time_keyboard=True)
 
-    def _h_user_access(self,bot,update,args):
+    def _h_admin_access(self,bot,update,args):
         logger.debug("user command message received")
         userid = update.message.from_user.id
-        username = "U"
+        username = "User "
         addifnotnone = lambda x: x+" " if x is not None else ""
         username+= addifnotnone(update.message.from_user.first_name)
         username+= addifnotnone(update.message.from_user.last_name)
         username+= addifnotnone(update.message.from_user.username)
-        msg = ""
+        msg = "Resp: "
         if userid == self._admin_id:
             if args[0] == "ALLOW":
                 self._DB.update_user(int(args[1]),args[2],1)
-                msg += "User %s ALLOWED access" % (username)
+                msg += "%s ALLOWED access" % (username)
             elif args[0] == "NOTALLOW":
                 self._DB.update_user(int(args[1]),args[2],0)
-                msg += "User %s NOT ALLOWED access" % (username)
+                msg += "%s NOT ALLOWED access" % (username)
+            elif args[0] == "DB":
+                logger.debug("Getting all notifications")
+                self.send_db_to_admin(bot)
+                msg+= "Obtained all data."
             else:
                 log.error("WTF!!!")
             bot.send_message(chat_id=userid,text = msg,
@@ -216,6 +220,13 @@ class RenfeBot:
                                             username),
                             reply_markup=ReplyKeyboardRemove())
 
+
+    def send_db_to_admin(self,bot):
+        usersDF = self._DB.get_users_DF()
+        queriesDF = self._DB.get_queries_DF()
+        bot.send_message(chat_id=self._admin_id,text="Not ready yet!")
+
+
     def _install_handlers(self):
         self._conv_handler = ConversationHandler(
             entry_points=[CommandHandler('start', self._h_start)],
@@ -227,8 +238,8 @@ class RenfeBot:
             fallbacks=[CommandHandler('cancel', self._h_cancel)]
             )
         self._updater.dispatcher.add_handler(self._conv_handler)
-        self._updater.dispatcher.add_handler(CommandHandler("user",
-                                                self._h_user_access,
+        self._updater.dispatcher.add_handler(CommandHandler("admin",
+                                                self._h_admin_access,
                                                 pass_args=True))
 
 

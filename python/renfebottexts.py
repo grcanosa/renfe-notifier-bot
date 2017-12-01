@@ -9,12 +9,12 @@ texts = {
                     "Solicitando acceso a admin.",
 "ADMIN_USER_REQ_ACCESS": "Usuario {username} solicita acceso",
 "OPTION_SELECTION": "Hola, qué quieres hacer hoy?",
-"MAIN_OP_ADD_CONSULT" : "Añadir consulta periódica",
-"MAIN_OP_DEL_CONSULT" : "Eliminar consulta periódica",
-"MAIN_OP_DO_CONSULT" : "Hacer consulta ahora",
+"MAIN_OP_ADD_QUERY" : "Añadir consulta periódica",
+"MAIN_OP_DEL_QUERY" : "Eliminar consulta periódica",
+"MAIN_OP_DO_QUERY" : "Hacer consulta ahora",
 "MAIN_OP_UNKNOWN": "Lo siento, no te he entendido. ",
-"DO_ONETIME_CONSULT": "Ok, voy a hacer una consulta puntual.",
-"ADD_PERIODIC_CONSULT": "Ok, voy a añadir una consulta periódica.",
+"DO_ONETIME_QUERY": "Ok, voy a hacer una consulta puntual.",
+"ADD_PERIODIC_QUERY": "Ok, voy a añadir una consulta periódica.",
 "SELECT_ORIGIN_STATION": "Introduce estación de origen.",
 "SELECT_DESTINATION_STATION": "Introduce estación de destino.",
 "SELECT_TRIP_DATE": "Elige ahora la fecha del viaje.",
@@ -29,9 +29,9 @@ texts = {
 
 
 keyboards = {
-"MAIN_OPTIONS": [[texts["MAIN_OP_DO_CONSULT"]],
-                [texts["MAIN_OP_ADD_CONSULT"]],
-                [texts["MAIN_OP_DEL_CONSULT"]]
+"MAIN_OPTIONS": [[texts["MAIN_OP_DO_QUERY"]],
+                [texts["MAIN_OP_ADD_QUERY"]],
+                [texts["MAIN_OP_DEL_QUERY"]]
                 ]
 ,
 "STATIONS" : [["MADRID-PUERTA DE ATOCHA",
