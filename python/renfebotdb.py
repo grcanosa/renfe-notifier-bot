@@ -7,6 +7,8 @@ import sqlite3
 import datetime
 
 
+from renfebottexts import texts as TEXTS
+
 def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
@@ -76,30 +78,57 @@ class RenfeBotDB:
 
     @_openclose
     def add_periodic_query(self,conn,cur,userid,origin,destination,date):
-        i_date = self.date_to_timestamp(date)
-        #user_queries =
+        ret = (False,"")
+        i_date = date_to_timestamp(date)
+        user_queries = self.get_user_queries(cur,userid)
+        found = False
+        for q in user_queries:
+            if q["origin"] == origin and
+                q["destination"] == destination and
+                q["date"] == i_date:
+                logger.debug("Query already in DB")
+                ret = (False,TEXTS["DB_QUERY_ALREADY"])
+                found = True
+                break;
+        if not found:
+            cur.execute("INSERT INTO notifications VALUES(%s,%s,%d,%d);" %
+                (origin,destination,i_date,userid))
+            conn.commit()
+            ret = (True,TEXTS["DB_QUERY_INSERTED"])
+        return ret
 
     @_openclose
     def remove_periodic_query(self,conn,cur,userid,origin,destination,date):
-        print("lala")
-
-    @_openclose
-    def _add_notification(self,conn,cur,userid,origin,destination,date):
-        #Convert date from string to number
-        i_date = self.date_to_timestamp(date)
-        cur.execute("INSERT INTO notifications VALUES(%s,%s,%d,%d);" %
-            (origin,destination,i_date,userid))
-        conn.commit()
-
-    @_openclose
-    def _remove_notification(self,conn,cur,userid,origin,destination,date):
-        i_date = int(datetime.datetime.strptime(date,"%d/%m/%Y").timestamp())
-        cur.execute("DELETE FROM notifications WHERE origin=%s "+
+        ret = (False,"")
+        i_date = datetime_to_timestamp(date)
+        user_queries = self.get_user_queries(cur,userid)
+        found = False
+        for q in user_queries:
+            if q["origin"] == origin and
+                q["destination"] == destination and
+                q["date"] == i_date:
+            logger.debug("Query found")
+            cur.execute("DELETE FROM notifications WHERE origin=%s "+
                                                 "AND destination=%s "+
                                                 "AND date=%d "+
                                                 "AND userid=%d;" %
-            (origin,destination,i_date,userid))
-        conn.commit()
+                (origin,destination,i_date,userid))
+            conn.commit()
+            ret = (True, TEXTS["DB_QUERY_REMOVED"])
+            found = True
+            break;
+        if not found:
+            ret = (False,TEXTS["DB_QUERY_NOT_PRESENT"])
+        return ret
+
+    @_openclose
+    def get_distinct_queries(self,conn,cur):
+        cur.execute("SELECT DISTINCT origin,destination,date FROM notifications;")
+        return cur.fetchall()
+
+    @_openclose
+    def get_
+
 
 
   #   def _check_trains(self):
