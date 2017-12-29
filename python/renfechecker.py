@@ -7,6 +7,12 @@ import datetime
 import pandas as pd
 import optparse
 import sys
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
 
 class RenfeChecker:
     def __init__(self):
@@ -64,9 +70,13 @@ class RenfeChecker:
             trayectos.append({"SALIDA":salT,"LLEGADA":lleT,"TIPO":tipo,"PRECIO":precio,"DURACION":float(dur)/3600,"CLASE":clase,"TARIFA":tarifa,"DISPONIBLE":disp})
             # print("\n")
             # print(trayectos)
+        logger.debug("Create Dataframe")
         df = pd.DataFrame(trayectos)
-        df = df[["DISPONIBLE","SALIDA","LLEGADA","PRECIO","TIPO","DURACION","CLASE","TARIFA"]]
-        df = df.sort_index(by="SALIDA")
+        logger.debug("Selecting columns")
+        df = df[["DISPONIBLE", "SALIDA", "LLEGADA", "PRECIO", "TIPO", "DURACION", "CLASE", "TARIFA"]]
+        logger.debug("ordering")
+        df = df.sort_values(by="SALIDA")
+        logger.debug("REturning")
         return df
 
     def _fill_elem(self,elem,data):

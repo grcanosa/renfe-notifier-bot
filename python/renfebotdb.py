@@ -50,9 +50,9 @@ class RenfeBotDB:
             conn.close()
 
     @_openclose
-    def get_user_auth(self,conn,cur,userid,username):
+    def get_user_auth(self, conn, cur, userid, username):
         auth = 0
-        cur.execute("SELECT auth FROM users WHERE userid=%d" %(userid))
+        cur.execute("SELECT auth FROM users WHERE userid=%d" % (userid))
         val = cur.fetchall()
         if len(val) == 0:
             cur.execute("INSERT INTO users VALUES (%d,\"%s\",%d);"%(userid,username,0))
@@ -69,30 +69,36 @@ class RenfeBotDB:
                         (username,auth,userid))
         conn.commit()
 
-    def date_to_timestamp(date):
+    def date_to_timestamp(self, date):
         return int(datetime.datetime.strptime(date,"%d/%m/%Y").timestamp())
 
-    def get_user_queries(self,cur,userid):
+    def timestamp_to_date(self, timestamp):
+        return datetime.datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y")
+
+    @_openclose
+    def get_user_queries(self,conn,cur,userid):
+        cur.execute("SELECT * FROM queries WHERE userid=%d" % (userid))
+        return cur.fetchall()
+
+    def _get_user_queries(self,cur,userid):
         cur.execute("SELECT * FROM queries WHERE userid=%d" % (userid))
         return cur.fetchall()
 
     @_openclose
     def add_periodic_query(self,conn,cur,userid,origin,destination,date):
-        ret = (False,"")
-        i_date = date_to_timestamp(date)
-        user_queries = self.get_user_queries(cur,userid)
+        ret = (False, "")
+        i_date = self.date_to_timestamp(date)
+        user_queries = self._get_user_queries(cur,userid)
         found = False
         for q in user_queries:
-            if q["origin"] == origin and
-                q["destination"] == destination and
-                q["date"] == i_date:
+            if q["origin"] == origin and q["destination"] == destination and q["date"] == i_date:
                 logger.debug("Query already in DB")
                 ret = (False,TEXTS["DB_QUERY_ALREADY"])
                 found = True
-                break;
+                break
         if not found:
-            cur.execute("INSERT INTO notifications VALUES(%s,%s,%d,%d);" %
-                (origin,destination,i_date,userid))
+            cur.execute("INSERT INTO queries VALUES (\"%s\", \"%s\", %d, %d);" %
+                (origin, destination, i_date, userid))
             conn.commit()
             ret = (True,TEXTS["DB_QUERY_INSERTED"])
         return ret
@@ -100,23 +106,21 @@ class RenfeBotDB:
     @_openclose
     def remove_periodic_query(self,conn,cur,userid,origin,destination,date):
         ret = (False,"")
-        i_date = datetime_to_timestamp(date)
+        i_date = self.datetime_to_timestamp(date)
         user_queries = self.get_user_queries(cur,userid)
         found = False
         for q in user_queries:
-            if q["origin"] == origin and
-                q["destination"] == destination and
-                q["date"] == i_date:
-            logger.debug("Query found")
-            cur.execute("DELETE FROM notifications WHERE origin=%s "+
+            if q["origin"] == origin and q["destination"] == destination and q["date"] == i_date:
+                logger.debug("Query found")
+                cur.execute("DELETE FROM queries WHERE origin=%s "+
                                                 "AND destination=%s "+
                                                 "AND date=%d "+
                                                 "AND userid=%d;" %
-                (origin,destination,i_date,userid))
-            conn.commit()
-            ret = (True, TEXTS["DB_QUERY_REMOVED"])
-            found = True
-            break;
+                    (origin,destination,i_date,userid))
+                conn.commit()
+                ret = (True, TEXTS["DB_QUERY_REMOVED"])
+                found = True
+                break;
         if not found:
             ret = (False,TEXTS["DB_QUERY_NOT_PRESENT"])
         return ret
@@ -126,8 +130,7 @@ class RenfeBotDB:
         cur.execute("SELECT DISTINCT origin,destination,date FROM notifications;")
         return cur.fetchall()
 
-    @_openclose
-    def get_
+
 
 
 

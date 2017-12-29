@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/local/bin/python3
 
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
@@ -19,7 +19,7 @@ from bot_data import TOKEN, ADMIN_ID
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+                    level=logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +59,10 @@ class RenfeBot:
 
     def _send_query_results_to_user(self, bot, userid, results, origin, dest, date):
         if results[0]:
+            logger.debug("Returning data to user")
             df = results[1]
-            trenes = df.loc[df["DISPONIBLE"] is True]
+            trenes = df.loc[df["DISPONIBLE"] == True]
+            logger.debug("Obtained trenes")
             bot.send_message(chat_id=userid, text=TEXTS["FOUND_N_TRAINS"].
                              format(ntrains=trenes.shape[0], origin=origin, destination=dest, date=date))
             for index, train in trenes.iterrows():
@@ -103,6 +105,7 @@ class RenfeBot:
                                                  conv._origin, conv._dest, conv._date)
             else:
                 logger.error("Problem, no other option should lead HERE!")
+        return ConversationHandler.END    
 
     def _h_cancel(self, bot, update):
         return ConversationHandler.END
@@ -147,6 +150,18 @@ class RenfeBot:
         elif update.message.text == TEXTS["MAIN_OP_DEL_QUERY"]:
             self._conversations[userid]._option = BotOptions.DEL_QUERY
             ret_code = RenfeBot.XXX
+        elif update.message.text == TEXTS["MAIN_OP_CHECK_QUERY"]:
+            user_queries = self._DB.get_user_queries(userid)
+            if len(user_queries) == 0:
+                update.message.reply_text(TEXTS["NO_QUERIES_FOR_USERID"])
+            else:
+                update.message.reply_text(TEXTS["QUERIES_FOR_USERID"])   
+                for q in user_queries:
+                    update.message.reply_text(TEXTS["QUERY_IN_DB"].format(origin=q["origin"],
+                        destination=q["destination"], date=self._DB.timestamp_to_date(q["date"])))
+            update.message.reply_text(TEXTS["END_MESSAGE"],reply_markup=ReplyKeyboardRemove())
+            ret_code = ConversationHandler.END
+
         else:
             update.message.reply_text(TEXTS["MAIN_OP_UNKNOWN"])
             ret_code = ConversationHandler.END
