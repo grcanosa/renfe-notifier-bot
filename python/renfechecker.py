@@ -2,6 +2,7 @@
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import NoSuchElementException
 import time
 import datetime
 import pandas as pd
@@ -89,11 +90,15 @@ class RenfeChecker:
 
 
     def _areTrainsAvailable(self):
-        nodata = self.driver.find_element_by_id("tab-mensaje_contenido")
-        if "no se encuentra disponible" in nodata.text:
+        try:
+            nodata = self.driver.find_element_by_id("tab-mensaje_contenido")
+            if "no se encuentra disponible" in nodata.text:
+                return False
+            else:
+                return True;
+        except selenium.common.exceptions.NoSuchElementException:
+            logger.error("Element not found")
             return False
-        else:
-            return True;
 
 
 def parse_arguments(argv):

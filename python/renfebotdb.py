@@ -126,6 +126,16 @@ class RenfeBotDB:
         return ret
 
     @_openclose
+    def remove_old_periodic_queries(self,conn,cur):
+        cur.execute("SELECT * FROM queries");
+        queries = cur.fetchall()
+        todaytimestmap = datetime.datetime.timestamp(datetime.datetime.now())
+        cur.execute("DELETE * FROM queries WHERE ")
+        for q in queries:
+            if q["date"] < todaytimestamp:
+                print("TO REMOVE")
+
+    @_openclose
     def get_distinct_queries(self,conn,cur):
         cur.execute("SELECT DISTINCT origin,destination,date FROM notifications;")
         return cur.fetchall()

@@ -7,7 +7,7 @@ texts = {
 
 "WELCOME": "Hola, soy tu avisador personal de billetes de Renfe.",
 "NOT_AUTH_REPLY": "Hola, {username}, por ahora no estás autorizado a usar este servicio. "
-                    "Solicitando acceso a admin.",
+                    "Solicitando acceso a admin. Por favor, intentalo dentro de unos minutos.",
 "ADMIN_USER_REQ_ACCESS": "Usuario {username} solicita acceso",
 "END_MESSAGE": "Gracias por usar RenfeAveBot, escribe /start para empezar de nuevo",
 "OPTION_SELECTION": "Hola, qué quieres hacer hoy?",
@@ -18,6 +18,7 @@ texts = {
 "MAIN_OP_UNKNOWN": "Lo siento, no te he entendido. ",
 "DO_ONETIME_QUERY": "Ok, voy a hacer una consulta puntual.",
 "ADD_PERIODIC_QUERY": "Ok, voy a añadir una consulta periódica.",
+"SELECT_TRIP_TO_DETELE": "Por favor, selecciona una consulta para eliminar",
 "SELECT_ORIGIN_STATION": "Introduce estación de origen.",
 "SELECT_DESTINATION_STATION": "Introduce estación de destino.",
 "SELECT_TRIP_DATE": "Elige ahora la fecha del viaje.",
@@ -34,7 +35,7 @@ texts = {
 "DB_QUERY_NOT_PRESENT": "La consulta periódica no existía.",
 "NO_QUERIES_FOR_USERID": "No hay consultas periódicas.",
 "QUERIES_FOR_USERID": "Tiene las siguientes consultas periódicas programadas.",
-"QUERY_IN_DB": "{origin}->{destination}, día {date}"
+"QUERY_IN_DB": "{date}: {origin}->{destination}"
 }
 
 
