@@ -12,17 +12,19 @@ import logging
 
 from telegramcalendarkeyboard import telegramcalendar
 from telegramcalendarkeyboard import telegramoptions
-import renfechecker
-import renfebotdb
-from renfebottexts import texts as TEXTS
-from renfebottexts import keyboards as KEYBOARDS
-from bot_data import TOKEN, ADMIN_ID
 
+import renfechecker
+import dbmanager as renfebotdb
+from texts import texts as TEXTS
+from texts import keyboards as KEYBOARDS
+from bot_data import TOKEN, ADMIN_ID
+from conversations import ConvStates, RenfeBotConversations
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.DEBUG)
 
 logger = logging.getLogger(__name__)
+
 
 
 class ConvStates(Enum):
@@ -31,7 +33,6 @@ class ConvStates(Enum):
     DATE = 3
     NUMERIC_OPTION = 4
 
-
 class BotOptions(Enum):
     ADD_QUERY = 1
     DEL_QUERY = 2
@@ -39,28 +40,16 @@ class BotOptions(Enum):
 
 
 class RenfeBot:
-    class Conversation:
-        def __init__(self, userid):
-            self._userid = userid
-            self.reset()
-
-        def reset(self):
-            self._option = 0
-            self._origin = None
-            self._dest = None
-            self._date = None
-            self._data = None
-
     def __init__(self, token, admin_id):
         self._token = token
         self._admin_id = admin_id
         self._updater = Updater(token)
         self._jobQ = self._updater.job_queue
         self._jobs = []
-        self._install_handlers()
-        self._conversations = {}
+        self._CV = RenfeBotConversations()
         self._RF = renfechecker.RenfeChecker()
         self._DB = renfebotdb.RenfeBotDB("midatabase.db")
+        self._install_handlers()
 
     def _send_query_results_to_user(self, bot, userid, results, origin, dest, date):
         if results[0]:

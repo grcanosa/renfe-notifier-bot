@@ -142,14 +142,3 @@ class RenfeBotDB:
 
 
 
-
-
-  #   def _check_trains(self):
-  #
-  #
-  #   def get_unique_trips(DF):
-  #
-  #       SELECT DISTINCT Latitude, Longitude
-  # FROM Coordinates
-  #
-  #       return DF.groupby(["ORIGIN","DESTINATION","DATE"])["USER_ID"].index
