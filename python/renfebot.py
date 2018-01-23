@@ -55,6 +55,8 @@ class RenfeBot:
         self._token = token
         self._admin_id = admin_id
         self._updater = Updater(token)
+        self._jobQ = self._updater.job_queue
+        self._jobs = []
         self._install_handlers()
         self._conversations = {}
         self._RF = renfechecker.RenfeChecker()
@@ -296,8 +298,30 @@ class RenfeBot:
                                                             self._h_admin_access,
                                                             pass_args=True))
 
+    def check_periodic_queries(self):
+        print("Checking")
+
+
+    def register_jobs(self):
+        j_morning = self._jobQ.run_daily(self.check_periodic_queries,
+                                    time=datetime.time(8,30),
+                                    days=(0,1,2,3,4,5,6),
+                                    name="periodic0830")
+        self._jobs.append(j_morning)
+        j_afternoon = self._jobQ.run_daily(self.check_periodic_queries,
+                                    time=datetime.time(16,0),
+                                    days=(0,1,2,3,4,5,6),
+                                    name="periodic1600")
+        self._jobs.append(j_afternoon)
+        j_mock_job = self._jobQ.run_repeating(self.check_periodic_queries,
+                                            interval=60,
+                                            name="periodicmock")
+        self._jobs.append(j_mock_job)
+
     def start(self):
+        self.register_jobs()
         self._updater.start_polling()
+
 
     def stop(self):
         self._RF.close()
