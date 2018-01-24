@@ -38,7 +38,7 @@ class RenfeBot:
         self._updater = Updater(token)
         self._jobQ = self._updater.job_queue
         self._jobs = []
-        self._CV = RenfeBotConversations()
+        self._CV = RenfeBotConversations(self)
         self._RF = renfechecker.RenfeChecker()
         self._DB = renfebotdb.RenfeBotDB("midatabase.db")
         self._install_handlers()

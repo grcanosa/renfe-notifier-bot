@@ -47,8 +47,9 @@ class RenfeBotConversations:
             self._date = None
             self._data = None
 
-    def __init__(self):
+    def __init__(self,renfebot):
         self._conversations = {}
+        self._RB = renfebot
 
     def handler_option(self, bot, update):
         userid = update.message.from_user.id
@@ -138,11 +139,11 @@ class RenfeBotConversations:
             bot.send_message(chat_id=userid, text=TEXTS["SELECTED_DATA"].
                              format(origin=conv._origin, destination=conv._dest, date=conv._date))
             if conv._option == BotOptions.ADD_QUERY:
-                res = self._DB.add_periodic_query(
+                res = self._RB._DB.add_periodic_query(
                     userid, conv._origin, conv._dest, conv._date)
                 bot.send_message(chat_id=userid,text=res[1])
             elif conv._option == BotOptions.DO_QUERY:
-                res = self._RF.check_trip(conv._origin, conv._dest, conv._date)
+                res = self._RB._RF.check_trip(conv._origin, conv._dest, conv._date)
                 self._send_query_results_to_user(bot, userid, res,
                                                  conv._origin, conv._dest, conv._date)
             else:
