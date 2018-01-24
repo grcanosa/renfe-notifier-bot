@@ -5,9 +5,14 @@ import os
 import pandas as pd
 import sqlite3
 import datetime
+import logging
 
+from texts import texts as TEXTS
 
-from renfebottexts import texts as TEXTS
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
 
 def dict_factory(cursor, row):
     d = {}

@@ -43,7 +43,7 @@ class RenfeBot:
         self._DB = renfebotdb.RenfeBotDB("midatabase.db")
         self._install_handlers()
 
-    def _send_query_results_to_user(self, bot, userid, results, origin, dest, date):
+    def send_query_results_to_user(self, bot, userid, results, origin, dest, date):
         if results[0]:
             logger.debug("Returning data to user")
             df = results[1]
@@ -51,16 +51,19 @@ class RenfeBot:
             logger.debug("Obtained trenes")
             bot.send_message(chat_id=userid, text=TEXTS["FOUND_N_TRAINS"].
                              format(ntrains=trenes.shape[0], origin=origin, destination=dest, date=date))
+            msg = ""
             for index, train in trenes.iterrows():
-                bot.send_message(chat_id=userid,
-                                 text=TEXTS["TRAIN_INFO"].format(
+                msg += TEXTS["TRAIN_INFO"].format(
                                      t_departure=train.SALIDA.strftime(
                                          "%H:%M"),
                                      t_arrival=train.LLEGADA.strftime("%H:%M"),
                                      cost=train.PRECIO if train.PRECIO > 50 else "*" +
                                      str(train.PRECIO) + "*",
                                      ticket_type=train.TARIFA
-                                 ),
+                                 )
+                msg += "\n"
+            bot.send_message(chat_id=userid,
+                                 text=msg,
                                  parse_mode=ParseMode.MARKDOWN)
         else:
             bot.send_message(chat_id=userid, text=TEXTS["NO_TRAINS_FOUND"].format(
@@ -68,64 +71,7 @@ class RenfeBot:
 
   
 
-
-
-    def _h_cancel(self, bot, update):
-        return ConversationHandler.END
-
-    def _h_station(self, bot, update):
-        logger.debug("Setting Station")
-        userid = update.message.from_user.id
-        if self._conversations[userid]._origin is None:
-            logger.debug("Origin Station")
-            self._conversations[userid]._origin = update.message.text.upper()
-            update.message.reply_text(TEXTS["SELECT_DESTINATION_STATION"],
-                                      reply_markup=ReplyKeyboardMarkup(KEYBOARDS["STATIONS"], one_time_keyboard=True))
-            return ConvStates.STATION
-        else:
-            logger.debug("Destination Station")
-            self._conversations[userid]._dest = update.message.text.upper()
-            bot.send_message(chat_id=userid,
-                             text=TEXTS["SELECTED_TRIP"].format(
-                                 origin=self._conversations[userid]._origin,
-                                 destination=self._conversations[userid]._dest
-                             ),
-                             reply_markup=ReplyKeyboardRemove())
-            bot.send_message(chat_id=userid, text=TEXTS["SELECT_TRIP_DATE"],
-                             reply_markup=telegramcalendar.create_calendar())
-            return ConvStates.DATE
-
-
-
-    def _start_conv_for_user(self, userid):
-        if userid not in self._conversations:
-            self._conversations[userid] = RenfeBot.Conversation(userid)
-        self._conversations[userid].reset()
-
-    def _h_start(self, bot, update):
-        ret_code = 0
-        userid = update.message.from_user.id
-        username = update.message.from_user.first_name
-        if update.message.from_user.last_name is not None:
-            username += " " + update.message.from_user.last_name
-        auth = self._DB.get_user_auth(userid, username)
-        if auth == 0:  # Not authorized
-            logger.debug("NOT AUTHORIZED USER")
-            update.message.reply_text(TEXTS["NOT_AUTH_REPLY"].format(username=username),
-                                      reply_markup=ReplyKeyboardRemove())
-            self._ask_admin_for_access(bot, userid, username)
-            ret_code = ConversationHandler.END
-        else:  # Authorized
-            logger.debug("AUTHORIZED USER")
-            self._start_conv_for_user(userid)
-            update.message.reply_text(TEXTS["OPTION_SELECTION"],
-                                      reply_markup=ReplyKeyboardMarkup(
-                                          KEYBOARDS["MAIN_OPTIONS"]),
-                                      one_time_keyboard=True)
-            ret_code = ConvStates.OPTION
-        return ret_code
-
-    def _ask_admin_for_access(self, bot, userid, username):
+    def ask_admin_for_access(self, bot, userid, username):
         keyboard = [
             ["/admin ALLOW %d %s" % (userid, username)],
             ["/admin NOT_ALLOW %d %s" % (userid, username)]
@@ -177,22 +123,22 @@ class RenfeBot:
 
     def _install_handlers(self):
         self._conv_handler = ConversationHandler(
-            entry_points=[CommandHandler('start', self._h_start)],
+            entry_points=[CommandHandler('start', self._CV.handler_start)],
             states={
-                ConvStates.OPTION: [MessageHandler(Filters.text, self._h_option)],
-                ConvStates.STATION: [MessageHandler(Filters.text, self._h_station)],
-                ConvStates.DATE: [CallbackQueryHandler(self._h_date)],
-                ConvStates.NUMERIC_OPTION: [CallbackQueryHandler(self._h_numeric_option)]
+                ConvStates.OPTION: [MessageHandler(Filters.text, self._CV.handler_option)],
+                ConvStates.STATION: [MessageHandler(Filters.text, self._CV.handler_station)],
+                ConvStates.DATE: [CallbackQueryHandler(self._CV.handler_date)],
+                ConvStates.NUMERIC_OPTION: [CallbackQueryHandler(self._CV.handler_numeric_option)]
             },
-            fallbacks=[CommandHandler('cancel', self._h_cancel)]
+            fallbacks=[CommandHandler('cancel', self._CV.handler_cancel)]
         )
         self._updater.dispatcher.add_handler(self._conv_handler)
         self._updater.dispatcher.add_handler(CommandHandler("admin",
                                                             self._h_admin_access,
                                                             pass_args=True))
 
-    def check_periodic_queries(self):
-        print("Checking")
+    def check_periodic_queries(self, bot, job):
+        bot.send_message(chat_id=self._admin_id,text="Periodic job with name "+job.name)
 
 
     def register_jobs(self):

@@ -28,14 +28,15 @@ texts = {
 "FOUND_N_TRAINS": "He encontrado {ntrains} trenes con asientos disponibles para"
                     " el trayecto {origin} -> {destination} para el día {date}",
 "NO_TRAINS_FOUND": "No hay trenes para el trayecto {origin} -> {destination} para el día {date}",
-"TRAIN_INFO": "De {t_departure} a {t_arrival}, €: {cost}, T: {ticket_type}",
+"TRAIN_INFO": "De {t_departure} a {t_arrival}, {cost}€, T: {ticket_type}",
 "DB_QUERY_ALREADY": "La consulta periódica ya había sido añadida previamente.",
 "DB_QUERY_INSERTED": "La consulta periódica ha sido añadida.",
 "DB_QUERY_REMOVED" : "La consulta ha sido eliminada.",
 "DB_QUERY_NOT_PRESENT": "La consulta periódica no existía.",
 "NO_QUERIES_FOR_USERID": "No hay consultas periódicas.",
 "QUERIES_FOR_USERID": "Tiene las siguientes consultas periódicas programadas.",
-"QUERY_IN_DB": "{date}: {origin} -> {destination}"
+"QUERY_IN_DB": "{date}: {origin} -> {destination}",
+"CANCEL" : "Cancelar"
 }
 
 
