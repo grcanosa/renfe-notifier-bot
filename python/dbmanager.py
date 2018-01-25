@@ -81,11 +81,11 @@ class RenfeBotDB:
         return datetime.datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y")
 
     @_openclose
-    def get_user_queries(self,conn,cur,userid):
+    def get_user_queries(self, conn, cur, userid):
         cur.execute("SELECT * FROM queries WHERE userid=%d" % (userid))
         return cur.fetchall()
 
-    def _get_user_queries(self,cur,userid):
+    def _get_user_queries(self, cur, userid):
         cur.execute("SELECT * FROM queries WHERE userid=%d" % (userid))
         return cur.fetchall()
 
@@ -109,40 +109,28 @@ class RenfeBotDB:
         return ret
 
     @_openclose
-    def remove_periodic_query(self,conn,cur,userid,origin,destination,date):
-        ret = (False,"")
-        i_date = self.datetime_to_timestamp(date)
-        user_queries = self.get_user_queries(cur,userid)
-        found = False
-        for q in user_queries:
-            if q["origin"] == origin and q["destination"] == destination and q["date"] == i_date:
-                logger.debug("Query found")
-                cur.execute("DELETE FROM queries WHERE origin=%s "+
-                                                "AND destination=%s "+
-                                                "AND date=%d "+
-                                                "AND userid=%d;" %
-                    (origin,destination,i_date,userid))
-                conn.commit()
-                ret = (True, TEXTS["DB_QUERY_REMOVED"])
-                found = True
-                break;
-        if not found:
-            ret = (False,TEXTS["DB_QUERY_NOT_PRESENT"])
-        return ret
+    def remove_periodic_query(self, conn, cur, userid, origin, destination, i_date):
+        logger.debug("Trying to remove "+ origin+ " -> "+destination+
+         " date: "+ str(i_date)+" userid "+ str(userid))
+        print(type(i_date))
+        print(type(userid))
+        sql = "DELETE FROM queries WHERE origin=\"{origin}\""
+        sql += " AND destination=\"{dest}\" AND date={date} AND userid={userid};"
+        sql = sql.format(origin=origin, dest=destination, date=str(i_date), userid= str(userid))
+        logger.debug("Executing "+sql)                                 
+        cur.execute(sql)
+        conn.commit()
+        return True
 
     @_openclose
-    def remove_old_periodic_queries(self,conn,cur):
-        cur.execute("SELECT * FROM queries");
-        queries = cur.fetchall()
-        todaytimestmap = datetime.datetime.timestamp(datetime.datetime.now())
-        cur.execute("DELETE * FROM queries WHERE ")
-        for q in queries:
-            if q["date"] < todaytimestamp:
-                print("TO REMOVE")
+    def remove_old_periodic_queries(self, conn, cur):
+        todaytimestamp = datetime.datetime.timestamp(datetime.datetime.now())
+        cur.execute("DELETE FROM queries WHERE date < %d;"%(todaytimestamp))
+        conn.commit()
 
     @_openclose
-    def get_distinct_queries(self,conn,cur):
-        cur.execute("SELECT DISTINCT origin,destination,date FROM notifications;")
+    def get_queries(self,conn,cur):
+        cur.execute("SELECT * FROM queries;")
         return cur.fetchall()
 
 

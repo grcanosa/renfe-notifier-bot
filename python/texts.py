@@ -32,6 +32,7 @@ texts = {
 "DB_QUERY_ALREADY": "La consulta periódica ya había sido añadida previamente.",
 "DB_QUERY_INSERTED": "La consulta periódica ha sido añadida.",
 "DB_QUERY_REMOVED" : "La consulta ha sido eliminada.",
+"DB_QUERY_NOT_REMOVED": "Ninguna consulta ha sido eliminada",
 "DB_QUERY_NOT_PRESENT": "La consulta periódica no existía.",
 "NO_QUERIES_FOR_USERID": "No hay consultas periódicas.",
 "QUERIES_FOR_USERID": "Tiene las siguientes consultas periódicas programadas.",

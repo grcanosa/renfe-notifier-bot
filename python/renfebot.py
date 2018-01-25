@@ -37,7 +37,6 @@ class RenfeBot:
         self._admin_id = admin_id
         self._updater = Updater(token)
         self._jobQ = self._updater.job_queue
-        self._jobs = []
         self._CV = RenfeBotConversations(self)
         self._RF = renfechecker.RenfeChecker()
         self._DB = renfebotdb.RenfeBotDB("midatabase.db")
@@ -62,7 +61,8 @@ class RenfeBot:
                                      ticket_type=train.TARIFA
                                  )
                 msg += "\n"
-            bot.send_message(chat_id=userid,
+            if msg != "":
+                bot.send_message(chat_id=userid,
                                  text=msg,
                                  parse_mode=ParseMode.MARKDOWN)
         else:
@@ -138,25 +138,39 @@ class RenfeBot:
                                                             pass_args=True))
 
     def check_periodic_queries(self, bot, job):
-        bot.send_message(chat_id=self._admin_id,text="Periodic job with name "+job.name)
+        bot.send_message(chat_id=self._admin_id,text="ADMIN: Checking periodic queries: "+job.name)
+        queries = self._DB.get_queries()
+        for q in queries:
+            date = self._DB.timestamp_to_date(q["date"])
+            res = self._RF.check_trip(q["origin"], q["destination"], date)
+            self.send_query_results_to_user(bot, q["userid"], res,
+                                                 q["origin"], q["destination"], date)
 
+       
+    def remove_old_periodic_queries(self, bot, job): 
+        bot.send_message(chat_id=self._admin_id,text="ADMIN: Removing old queries: "+job.name)
+        self._DB.remove_old_periodic_queries()
 
     def register_jobs(self):
-        j_morning = self._jobQ.run_daily(self.check_periodic_queries,
-                                    time=datetime.time(8,30),
-                                    days=(0,1,2,3,4,5,6),
-                                    name="periodic0830")
-        self._jobs.append(j_morning)
-        j_afternoon = self._jobQ.run_daily(self.check_periodic_queries,
-                                    time=datetime.time(16,0),
-                                    days=(0,1,2,3,4,5,6),
-                                    name="periodic1600")
-        self._jobs.append(j_afternoon)
-        j_mock_job = self._jobQ.run_repeating(self.check_periodic_queries,
-                                            interval=60,
+        self._jobQ.run_daily(self.remove_old_periodic_queries,
+                                    time=datetime.time(0, 0),
+                                    days=(0, 1, 2, 3, 4, 5, 6),
+                                    name="remove0800")
+        self._jobQ.run_daily(self.check_periodic_queries,
+                                    time=datetime.time(8, 30),
+                                    days=(0, 1, 2, 3, 4, 5, 6),
+                                    name="check0830")
+        self._jobQ.run_daily(self.check_periodic_queries,
+                                    time=datetime.time(16, 0),
+                                    days=(0, 1, 2, 3, 4, 5, 6),
+                                    name="check1600")
+        self._jobQ.run_repeating(self.check_periodic_queries,
+                                            interval=120,
                                             name="periodicmock")
-        self._jobs.append(j_mock_job)
-
+        self._jobQ.run_repeating(self.remove_old_periodic_queries,
+                                            interval=120,
+                                            name="periodicmock2")
+        
     def start(self):
         self.register_jobs()
         self._updater.start_polling()

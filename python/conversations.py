@@ -156,13 +156,18 @@ class RenfeBotConversations:
         selected, query_index = telegramoptions.process_option_selection(bot, update)
         if not selected:
             logger.debug("Nothing selected")
+            bot.send_message(chat_id= userid, text=TEXTS["DB_QUERY_NOT_REMOVED"],reply_markup=ReplyKeyboardRemove())
             return ConversationHandler.END
         else:
             logger.debug("Deleting query with index "+str(query_index))
             if len(user_queries) > query_index:
                 query = user_queries[query_index]
-                self._RB._DB.remove_periodic_query(query["userid"], query["origin"],
-                                     query["destination"], query["date"])
+                if self._RB._DB.remove_periodic_query(query["userid"], query["origin"],
+                                     query["destination"], query["date"]):
+                    bot.send_message(chat_id=userid,text=TEXTS["DB_QUERY_REMOVED"],reply_markup=ReplyKeyboardRemove())
+                else:
+                    bot.send_message(chat_id=userid,text=TEXTS["DB_QUERY_NOT_PRESENT"],reply_markup=ReplyKeyboardRemove())
+        return ConversationHandler.END
 
     def handler_date(self, bot, update):
         logger.debug("Processing date")
