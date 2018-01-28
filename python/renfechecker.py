@@ -5,7 +5,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 import time
 import datetime
-import pandas as pd
 import optparse
 import sys
 import logging
@@ -71,14 +70,8 @@ class RenfeChecker:
             trayectos.append({"SALIDA":salT,"LLEGADA":lleT,"TIPO":tipo,"PRECIO":precio,"DURACION":float(dur)/3600,"CLASE":clase,"TARIFA":tarifa,"DISPONIBLE":disp})
             # print("\n")
             # print(trayectos)
-        logger.debug("Create Dataframe")
-        df = pd.DataFrame(trayectos)
-        logger.debug("Selecting columns")
-        df = df[["DISPONIBLE", "SALIDA", "LLEGADA", "PRECIO", "TIPO", "DURACION", "CLASE", "TARIFA"]]
-        logger.debug("ordering")
-        df = df.sort_values(by="SALIDA")
-        logger.debug("REturning")
-        return df
+        logger.debug("Returning arrary")
+        return trayectos
 
     def _fill_elem(self,elem,data):
         if data is not None:

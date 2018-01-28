@@ -45,7 +45,7 @@ class RenfeBot:
     def send_query_results_to_user(self, bot, userid, results, origin, dest, date):
         if results[0]:
             logger.debug("Returning data to user")
-            df = results[1]
+            trayectos = results[1]
             trenes = df.loc[df["DISPONIBLE"] == True]
             logger.debug("Obtained trenes")
             bot.send_message(chat_id=userid, text=TEXTS["FOUND_N_TRAINS"].
