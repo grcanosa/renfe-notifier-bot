@@ -1,17 +1,21 @@
 #!/usr/local/bin/python3
-
+"""
+@author gonzalo-rodriguez
+"""
+#import telegram modules
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
                           Filters, RegexHandler, ConversationHandler)
 from telegram.ext import CallbackQueryHandler
 from telegram.parsemode import ParseMode
 
+#import general modules
 import datetime
 from enum import Enum
 import logging
 
 
-
+# import my modules
 import renfechecker
 import dbmanager as renfebotdb
 from texts import texts as TEXTS
@@ -26,20 +30,23 @@ logger = logging.getLogger(__name__)
 
 
 
-
-
-
-
-
 class RenfeBot:
+    '''
+    Main class of the bot. 
+    Contains all other objects. 
+    '''
     def __init__(self, token, admin_id):
         self._token = token
         self._admin_id = admin_id
         self._updater = Updater(token)
         self._jobQ = self._updater.job_queue
+        #Conversions with the bot
         self._CV = RenfeBotConversations(self)
+        #Checker in selenium
         self._RF = renfechecker.RenfeChecker()
+        #DataBase
         self._DB = renfebotdb.RenfeBotDB("midatabase.db")
+        #After everything is created install all telegram handlers. 
         self._install_handlers()
 
     def send_query_results_to_user(self, bot, userid, results, origin, dest, date):
@@ -122,6 +129,8 @@ class RenfeBot:
         bot.send_message(chat_id=self._admin_id, text="Not ready yet!")
 
     def _install_handlers(self):
+        #Create conv handler
+        #The entry point should be something else than a /start command.
         self._conv_handler = ConversationHandler(
             entry_points=[CommandHandler('start', self._CV.handler_start)],
             states={
@@ -132,7 +141,9 @@ class RenfeBot:
             },
             fallbacks=[CommandHandler('cancel', self._CV.handler_cancel)]
         )
+        #Add conv handler
         self._updater.dispatcher.add_handler(self._conv_handler)
+        #Add admin handler
         self._updater.dispatcher.add_handler(CommandHandler("admin",
                                                             self._h_admin_access,
                                                             pass_args=True))
