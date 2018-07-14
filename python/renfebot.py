@@ -172,12 +172,12 @@ class RenfeBot:
                                     time=datetime.time(16, 0),
                                     days=(0, 1, 2, 3, 4, 5, 6),
                                     name="check1600")
-        self._jobQ.run_repeating(self.check_periodic_queries,
-                                            interval=120,
-                                            name="periodicmock")
-        self._jobQ.run_repeating(self.remove_old_periodic_queries,
-                                            interval=120,
-                                            name="periodicmock2")
+        # self._jobQ.run_repeating(self.check_periodic_queries,
+        #                                     interval=120,
+        #                                     name="periodicmock")
+        # self._jobQ.run_repeating(self.remove_old_periodic_queries,
+        #                                     interval=120,
+        #                                     name="periodicmock2")
         
     def start(self):
         self.register_jobs()
