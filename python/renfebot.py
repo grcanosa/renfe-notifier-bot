@@ -10,7 +10,7 @@ import datetime
 from enum import Enum
 import logging
 
-
+import argparse
 
 import renfechecker
 import dbmanager as renfebotdb
@@ -32,14 +32,14 @@ logger = logging.getLogger(__name__)
 
 
 class RenfeBot:
-    def __init__(self, token, admin_id):
+    def __init__(self, token, admin_id, database):
         self._token = token
         self._admin_id = admin_id
         self._updater = Updater(token)
         self._jobQ = self._updater.job_queue
         self._CV = RenfeBotConversations(self)
         self._RF = renfechecker.RenfeChecker()
-        self._DB = renfebotdb.RenfeBotDB("midatabase.db")
+        self._DB = renfebotdb.RenfeBotDB(database)
         self._install_handlers()
 
 
@@ -191,8 +191,15 @@ class RenfeBot:
     def idle(self):
         self._updater.idle()
 
+def parse_arguments():
+    parser = argparse.ArgumentParser("RenfeBot: check renfe web for tickets")
+    parser.add_argument("--database","-d",help="Database location",dest="database",default="/mnt/shared/renfebot.db")
+    args = parser.parse_args()
+    return args
+
 
 if __name__ == "__main__":
-    rb = RenfeBot(TOKEN, ADMIN_ID)
+    args = parse_arguments()
+    rb = RenfeBot(TOKEN, ADMIN_ID,args.database)
     rb.start()
     rb.idle()
