@@ -29,6 +29,7 @@ class RenfeChecker:
 
     def close(self):
         self.driver.close()
+        self.display.stop()
 
     def check_trip(self,orig,dest,dat_go,dat_ret=None):
         self.driver.get("http://www.renfe.com")
