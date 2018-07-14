@@ -5,7 +5,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 import time
 import datetime
-import pandas as pd
+#import pandas as pd
 import optparse
 import sys
 import logging
