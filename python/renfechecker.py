@@ -3,6 +3,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
+from pyvirtualdisplay import Display
 import time
 import datetime
 #import pandas as pd
@@ -17,7 +18,12 @@ logger = logging.getLogger(__name__)
 
 class RenfeChecker:
     def __init__(self):
+        self._display = Display(visible=0, size=(800, 600))
+        self._display.start()
+        self._profile = webdriver.FirefoxProfile()
+        self._profile.native_events_enabled = False
         self.driver = webdriver.Firefox()
+        self.driver.set_page_load_timeout(60)
         #self.driver.maximize_window()
         self.driver.get("http://www.renfe.com")
 
@@ -41,7 +47,7 @@ class RenfeChecker:
         self._fill_elem("IdOrigen",orig)
         self._fill_elem("__fechaIdaVisual",dat_go)
         self._fill_elem("__fechaVueltaVisual",dat_ret)
-        bt = self.driver.find_element_by_class_name("btn.btn_home")
+        bt = self.driver.find_element_by_class_name("btn_home")
         bt.click()
 
     def _getTrainsDF(self):
