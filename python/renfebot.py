@@ -42,23 +42,31 @@ class RenfeBot:
         self._DB = renfebotdb.RenfeBotDB("midatabase.db")
         self._install_handlers()
 
+
+    def get_trayectos_disponibles(tray):
+        disp = []
+        for t in tray:
+            if "DISPONIBLE" in t and t["DISPONIBLE"]:
+                disp.append(t)
+        return disp
+
     def send_query_results_to_user(self, bot, userid, results, origin, dest, date):
         if results[0]:
             logger.debug("Returning data to user")
             trayectos = results[1]
-            trenes = df.loc[df["DISPONIBLE"] == True]
+            trenes = RenfeBot.get_trayectos_disponibles(trayectos)
             logger.debug("Obtained trenes")
             bot.send_message(chat_id=userid, text=TEXTS["FOUND_N_TRAINS"].
-                             format(ntrains=trenes.shape[0], origin=origin, destination=dest, date=date))
+                             format(ntrains=len(trenes), origin=origin, destination=dest, date=date))
             msg = ""
-            for index, train in trenes.iterrows():
+            for  train in trenes:
                 msg += TEXTS["TRAIN_INFO"].format(
-                                     t_departure=train.SALIDA.strftime(
+                                     t_departure=train["SALIDA"].strftime(
                                          "%H:%M"),
-                                     t_arrival=train.LLEGADA.strftime("%H:%M"),
-                                     cost=train.PRECIO if train.PRECIO > 50 else "*" +
-                                     str(train.PRECIO) + "*",
-                                     ticket_type=train.TARIFA
+                                     t_arrival=train["LLEGADA"].strftime("%H:%M"),
+                                     cost=train["PRECIO"] if train["PRECIO"] > 50 else "*" +
+                                     str(train["PRECIO"]) + "*",
+                                     ticket_type=train["TARIFA"]
                                  )
                 msg += "\n"
             if msg != "":
