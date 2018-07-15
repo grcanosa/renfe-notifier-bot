@@ -3,7 +3,8 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
-from pyvirtualdisplay import Display
+if __name__ != "__main__":
+    from pyvirtualdisplay import Display
 import time
 import datetime
 
@@ -17,9 +18,12 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 class RenfeChecker:
-    def __init__(self):
-        self._display = Display(visible=0, size=(800, 600))
-        self._display.start()
+    def __init__(self,display=True):
+        if display:
+            self._display = Display(visible=0, size=(800, 600))
+            self._display.start()
+        else:
+            self._display = None
         self._profile = webdriver.FirefoxProfile()
         self._profile.native_events_enabled = False
         self.driver = webdriver.Firefox()
@@ -29,7 +33,8 @@ class RenfeChecker:
 
     def close(self):
         self.driver.close()
-        self.display.stop()
+        if self._display is not None:
+            self._display.stop()
 
     def check_trip(self,orig,dest,dat_go,dat_ret=None):
         self.driver.get("http://www.renfe.com")
@@ -123,7 +128,7 @@ def printRes(aux,ori,des,fec):
         print("NO RESULTS")
 
 def main(ori,des,fec):
-    rf = RenfeChecker()
+    rf = RenfeChecker(False)
     aux = rf.check_trip(ori,des,fec)
     printRes(aux, ori, des, fec)
     aux = rf.check_trip(des,ori,fec)
