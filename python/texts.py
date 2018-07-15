@@ -51,8 +51,8 @@ keyboards = {
 "STATIONS" : [["MADRID-PUERTA DE ATOCHA",
                 "SEVILLA-SANTA JUSTA"],
                 ["BARCELONA-SANTS",
-                "VALENCIA"],
-                ["ALICANTE",
-                "MALAGA"]
+                "VALENCIA JOAQUIN SOROLLA"],
+                ["ALICANTE/ALACANT",
+                "MALAGA MARIA ZAMBRANO"]
             ]
 }
