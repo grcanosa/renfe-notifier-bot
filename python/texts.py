@@ -3,7 +3,9 @@ Texts to be displayed
 
 """
 
-texts = {
+import emoji
+
+texts_raw = {
 
 "WELCOME": "Hola, soy tu avisador personal de billetes de Renfe.",
 "NOT_AUTH_REPLY": "Hola, {username}, por ahora no estás autorizado a usar este servicio. "
@@ -24,7 +26,7 @@ texts = {
 "SELECT_TRIP_DATE": "Elige ahora la fecha del viaje.",
 "SELECTED_TRIP": "Has seleccionado el trayecto {origin} -> {destination}",
 "SELECTED_DATA": "Perfecto, has seleccionado el trayecto {origin} -> {destination}"
-                    " para el día {date}",
+                    " para el día {date}. Espera mientras busco trenes :train:. (Puede tardar un poco...).",
 "FOUND_N_TRAINS": "He encontrado {ntrains} trenes con asientos disponibles para"
                     " el trayecto {origin} -> {destination} para el día {date}",
 "NO_TRAINS_FOUND": "No hay trenes para el trayecto {origin} -> {destination} para el día {date}",
@@ -40,6 +42,9 @@ texts = {
 "CANCEL" : "Cancelar"
 }
 
+texts = {}
+for t in texts_raw:
+    texts[t] = emoji.emojize(texts_raw[t])
 
 keyboards = {
 "MAIN_OPTIONS": [[texts["MAIN_OP_DO_QUERY"]],
