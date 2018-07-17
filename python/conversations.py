@@ -188,6 +188,7 @@ class RenfeBotConversations:
                     userid, conv._origin, conv._dest, conv._date)
                 bot.send_message(chat_id=userid,text=res[1])
             elif conv._option == BotOptions.DO_QUERY:
+                bot.send_message(chat_id=userid,text=TEXTS["WAIT_FOR_TRAINS"])
                 res = self._RB._RF.check_trip(conv._origin, conv._dest, conv._date)
                 self._RB.send_query_results_to_user(bot, userid, res,
                                                  conv._origin, conv._dest, conv._date)
